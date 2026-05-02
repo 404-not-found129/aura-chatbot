@@ -81,8 +81,8 @@ PROVIDER_COLOR = {
 
 class AuraBot:
     def __init__(self):
-        self.provider = "gemini"
-        self.model_name = "gemini-2.5-flash"
+        self.provider = os.getenv("AURA_PROVIDER", "gemini")
+        self.model_name = os.getenv("AURA_MODEL", DEFAULT_MODEL.get(self.provider, "gemini-2.5-flash"))
         self.gemini_key = os.getenv("GEMINI_API_KEY")
         self.openai_key = os.getenv("OPENAI_API_KEY")
         self.claude_key = os.getenv("ANTHROPIC_API_KEY")
@@ -95,13 +95,13 @@ class AuraBot:
         self.name = "Aura"
         self.theme_color = "medium_purple1"
         self.version = "v1.6.0"
-        self.use_web = False
+        self.use_web = os.getenv("AURA_USE_WEB", "false").lower() == "true"
         self.last_response = ""
         self.system_instruction = ""
 
         self.commands = [
             '/help', '/exit', '/quit', '/clear', '/init',
-            '/save', '/system', '/web', '/model', '/provider',
+            '/save', '/system', '/web', '/websearch', '/model', '/provider',
             '/attach', '/detach', '/files',
         ]
         self.completer = SlashCommandCompleter(self.commands)
@@ -185,7 +185,7 @@ class AuraBot:
         parts.append(f"[USER MESSAGE]\n{user_input}")
         return "\n\n".join(parts)
 
-    def _save_api_key(self, key_name, key_value):
+    def _save_env_var(self, key_name, key_value):
         env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
         env_content = ""
         if os.path.exists(env_path):
@@ -204,7 +204,7 @@ class AuraBot:
         console.print(f"Get one at: [cyan]{help_url}[/cyan]")
         while not key or key.strip() == "":
             key = console.input(f"\n[{self.theme_color}]Paste your {label} API key: [/{self.theme_color}]").strip()
-        self._save_api_key(key_name, key)
+        self._save_env_var(key_name, key)
         console.print(f"[bold green]API key saved to .env![/bold green]\n")
         return key
 
@@ -407,11 +407,12 @@ class AuraBot:
                     elif cmd == '/system':
                         console.print(Panel(self.system_instruction, title="Active System Rules", border_style="cyan", box=box.ROUNDED))
 
-                    elif cmd == '/web':
+                    elif cmd in ('/web', '/websearch'):
                         if self.provider != "gemini":
                             console.print("[yellow]Web Search is only available with the Gemini provider.[/yellow]")
                         else:
                             self.use_web = not self.use_web
+                            self._save_env_var("AURA_USE_WEB", str(self.use_web).lower())
                             self._init_gemini()
                             console.clear()
                             self.draw_dashboard()
@@ -479,6 +480,8 @@ class AuraBot:
                             else:
                                 self.provider = new_provider
                                 self.model_name = DEFAULT_MODEL[self.provider]
+                                self._save_env_var("AURA_PROVIDER", self.provider)
+                                self._save_env_var("AURA_MODEL", self.model_name)
                                 if self.provider == "openai" and (not self.openai_key or not self.openai_key.strip()):
                                     self.openai_key = self._prompt_for_key("OPENAI_API_KEY", "OpenAI", "https://platform.openai.com/api-keys")
                                 elif self.provider == "claude" and (not self.claude_key or not self.claude_key.strip()):
@@ -502,6 +505,7 @@ class AuraBot:
                         choice = console.input(f"\n[{self.theme_color}]Select model (1-{len(models)}, Enter to cancel): [/{self.theme_color}]").strip()
                         if choice.isdigit() and 1 <= int(choice) <= len(models):
                             self.model_name = models[int(choice) - 1][0]
+                            self._save_env_var("AURA_MODEL", self.model_name)
                             self._init_provider()
                             console.clear()
                             self.draw_dashboard()
