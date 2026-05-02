@@ -15,8 +15,8 @@ orientation = portrait
 
 # Android settings
 android.permissions = INTERNET
-android.api = 33
-android.minapi = 26
+android.api = 36
+android.minapi = 29
 android.ndk = 25b
 android.archs = arm64-v8a, armeabi-v7a
 

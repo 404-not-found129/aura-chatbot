@@ -1,56 +1,120 @@
-# Aura - Terminal AI Chatbot
+# Aura AI Chatbot
 
-Aura is a sleek, terminal-based AI assistant powered by Google's Gemini models and built with Python. It features a rich, visually appealing command-line interface with Markdown support and interactive chat capabilities.
+Aura is an AI assistant available as both a terminal app and an Android APK. It supports multiple AI providers — Google Gemini, OpenAI GPT, and Anthropic Claude — with a rich, visually appealing interface and file attachment support.
+
+## Download
+
+You can download the latest release files (APK, source, install scripts) directly from Google Drive:
+
+**[Download from Google Drive](https://drive.google.com/drive/folders/1Ddglkx1Y0vmgq7Zm11ikKMt9OBMNtNJj?dmr=1&ec=wgc-drive-%5Bmodule%5D-goto)**
+
+Or clone/download this repository manually (see Installation below).
+
+---
 
 ## Features
-- **Rich Terminal UI**: Beautifully formatted text and Markdown rendering.
-- **Conversational AI**: Maintains chat history using Google's `gemini-2.5-flash` model.
-- **Simple Setup**: Just drop in an API key and run.
 
-## Prerequisites
+- **Multi-Provider AI**: Switch between Google Gemini, OpenAI GPT, and Anthropic Claude
+- **Streaming Responses**: Real-time token-by-token output with a loading spinner
+- **File Attachments**: Attach local files as context for the AI (`/attach <path>`)
+- **Rich Terminal UI**: Markdown rendering, syntax highlighting, and styled panels
+- **Android App**: Full chat UI APK built with Kivy, targeting Android 10+ (API 29+), compatible with Android 16 / Pixel 10 Pro
+- **Slash Commands**: `/provider`, `/model`, `/attach`, `/detach`, `/files`, `/clear`, `/help`
+
+---
+
+## Terminal App
+
+### Prerequisites
+
 - Python 3.9+
-- A Google Gemini API Key. You can get one for free at [Google AI Studio](https://aistudio.google.com/).
+- API key(s) for the providers you want to use:
+  - **Gemini**: [Google AI Studio](https://aistudio.google.com/) (free tier available)
+  - **OpenAI**: [platform.openai.com](https://platform.openai.com/)
+  - **Claude**: [console.anthropic.com](https://console.anthropic.com/)
 
-## Installation
+### Installation
 
-1. **Clone or Download the Repository:**
+1. **Clone or download:**
    ```bash
    git clone <your-github-repo-url>
    cd "aura chatbot"
    ```
 
-2. **Run the Install Script:**
-   Use the provided script to automatically create a virtual environment, install dependencies, and set up your `.env` file.
+2. **Run the install script:**
    ```bash
    ./install.sh
    ```
+   This creates a virtual environment, installs dependencies, and sets up your `.env` file.
 
-3. **Configure your API Key:**
-   - Open the newly created `.env` file in your text editor and replace `your_api_key_here` with your actual Gemini API key. *(Note: The `.env` file is ignored by Git to keep your API key secure!)*
+3. **Add your API key(s) to `.env`:**
+   ```
+   GEMINI_API_KEY=your_key_here
+   OPENAI_API_KEY=your_key_here
+   ANTHROPIC_API_KEY=your_key_here
+   ```
+   You only need keys for the providers you plan to use.
 
-## Usage
-
-Once installed, you can start the chatbot from anywhere on your computer by simply typing:
+### Usage
 
 ```bash
 aura
 ```
 
-### Commands:
-- Type your message and hit Enter to chat.
-- `clear` - Clears the terminal screen.
-- `exit` or `quit` - Exits the chatbot.
+### Commands
+
+| Command | Description |
+|---|---|
+| `/provider` | Switch AI provider (Gemini / OpenAI / Claude) |
+| `/model` | Switch model for the current provider |
+| `/attach <path>` | Attach a file as context for the AI |
+| `/detach <name>` | Remove an attached file |
+| `/files` | List currently attached files |
+| `clear` | Clear the terminal screen |
+| `exit` / `quit` | Exit the chatbot |
+
+### Supported Models
+
+**Gemini** — `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-2.0-flash-lite`, `gemini-1.5-pro`, `gemini-1.5-flash`
+
+**OpenAI** — `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo`, `gpt-3.5-turbo`
+
+**Claude** — `claude-opus-4-5`, `claude-sonnet-4-5`, `claude-haiku-4-5`
+
+---
+
+## Android App
+
+The APK is a full Kivy-based chat app with a dark purple theme, provider/model selection, and API key configuration built in.
+
+### Requirements
+
+- Android 10 or higher (API 29+)
+- Compatible with Android 16 / Pixel 10 Pro
+
+### Install
+
+1. Download `aura-1.6.0-debug.apk` from the [Google Drive folder](https://drive.google.com/drive/folders/1Ddglkx1Y0vmgq7Zm11ikKMt9OBMNtNJj?dmr=1&ec=wgc-drive-%5Bmodule%5D-goto) or from `android/aura-1.6.0-debug.apk` in this repo.
+2. Transfer the APK to your Android device.
+3. Enable **Install from unknown sources** in Settings → Apps → Special app access.
+4. Open the APK file to install.
+
+Alternatively, install via ADB with USB debugging enabled:
+```bash
+adb install aura-1.6.0-debug.apk
+```
+
+5. Open the app, tap the settings icon, enter your API key(s), and start chatting.
+
+---
 
 ## Pushing to GitHub
 
-This repository is already configured with a `.gitignore` file that prevents you from accidentally committing your `.env` file or virtual environment. 
+A `.gitignore` is included to prevent committing your `.env` file or virtual environment.
 
-To push your chatbot to your own GitHub repository:
-1. Go to [GitHub](https://github.com/new) and create a new, empty repository.
-2. Run the following commands in this directory:
-   ```bash
-   git add .
-   git commit -m "Initial commit: Added Aura terminal chatbot"
-   git remote add origin <your-new-github-repo-url>
-   git push -u origin main
-   ```
+```bash
+git add .
+git commit -m "Initial commit: Aura AI chatbot"
+git remote add origin <your-github-repo-url>
+git push -u origin main
+```
