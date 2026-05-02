@@ -58,3 +58,4 @@ ENV/
 # Environments (NEVER COMMIT SECRETS)
 .env
 .env.local
+android/.buildozer/android/platform/python-for-android/
