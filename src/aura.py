@@ -18,7 +18,8 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.formatted_text import HTML
 
-load_dotenv()
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+load_dotenv(env_path)
 
 console = Console()
 
@@ -156,12 +157,12 @@ class AuraBot:
         ```
 
         **COMMAND EXECUTION (IMPORTANT):**
-        You CAN execute shell commands directly on the user's machine! NEVER say you cannot run commands.
+        You CAN execute shell commands. To protect the user's system, these commands are executed safely within an isolated virtual machine (Docker container).
         To execute a command, output it in a markdown block EXACTLY like this:
         ```bash:run
-        mv test ~/Downloads/
+        ls -la
         ```
-        The local application will intercept this and run it on your behalf.
+        The local application will intercept this and run it securely in the VM on your behalf.
 
         When you output these exact formats, the local Aura application automatically intercepts them. ALWAYS use these capabilities proactively."""
 
@@ -557,13 +558,19 @@ class AuraBot:
                     r'```(?:[a-zA-Z0-9_-]*\s*)?file:\s*([^\n]+)\n(.*?)```',
                     self.last_response, re.DOTALL | re.IGNORECASE
                 )
+                workspace_root = os.path.abspath(os.getcwd())
                 for file_path, content in file_blocks:
                     file_path = file_path.strip()
                     try:
-                        os.makedirs(os.path.dirname(os.path.abspath(file_path)) or '.', exist_ok=True)
-                        with open(file_path, "w", encoding="utf-8") as f:
+                        # Prevent path traversal: resolve path and ensure it's within workspace
+                        target_path = os.path.abspath(os.path.join(workspace_root, file_path.lstrip('/\\')))
+                        if os.path.commonpath([workspace_root, target_path]) != workspace_root:
+                            raise PermissionError(f"Cannot write outside of workspace: {target_path}")
+                            
+                        os.makedirs(os.path.dirname(target_path) or '.', exist_ok=True)
+                        with open(target_path, "w", encoding="utf-8") as f:
                             f.write(content)
-                        console.print(f"[bold green]✓ Wrote:[/bold green] {file_path}")
+                        console.print(f"[bold green]✓ Wrote:[/bold green] {os.path.relpath(target_path, workspace_root)}")
                     except Exception as e:
                         console.print(f"[bold red]✗ Failed to write {file_path}: {e}[/bold red]")
 
@@ -576,12 +583,17 @@ class AuraBot:
                     shell_cmd = shell_cmd.strip()
                     console.print(Panel(
                         f"[cyan]{shell_cmd}[/cyan]",
-                        title="[bold yellow]⚡ Aura wants to run[/bold yellow]",
+                        title="[bold yellow]⚡ Aura wants to run in VM (Docker)[/bold yellow]",
                         border_style="yellow", box=box.ROUNDED
                     ))
-                    choice = console.input(f"[{self.theme_color}]Execute? (y/N): [/{self.theme_color}]").strip().lower()
+                    choice = console.input(f"[{self.theme_color}]Execute in isolated VM? (y/N): [/{self.theme_color}]").strip().lower()
                     if choice == 'y':
-                        result = subprocess.run(shell_cmd, shell=True, text=True, capture_output=True)
+                        import shlex
+                        # Sandbox command in a Docker container acting as a VM
+                        # Use the host's real workspace path for the nested volume mount
+                        host_workspace = os.getenv("HOST_WORKSPACE", os.getcwd())
+                        docker_cmd = f'docker run --rm -v "{host_workspace}:/workspace" -w /workspace python:3.11-slim bash -c {shlex.quote(shell_cmd)}'
+                        result = subprocess.run(docker_cmd, shell=True, text=True, capture_output=True)
                         if result.returncode == 0:
                             console.print(f"[bold green]✓ Done[/bold green]")
                             if result.stdout:

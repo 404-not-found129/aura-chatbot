@@ -28,10 +28,20 @@ Or clone/download this repository manually (see Installation below).
 ### Prerequisites
 
 - Python 3.9+
+- Docker (Required for safe virtual machine command execution)
 - API key(s) for the providers you want to use:
   - **Gemini**: [Google AI Studio](https://aistudio.google.com/) (free tier available)
   - **OpenAI**: [platform.openai.com](https://platform.openai.com/)
   - **Claude**: [console.anthropic.com](https://console.anthropic.com/)
+
+### Virtual Machine Isolation
+
+For enhanced security, Aura runs AI-generated shell commands inside an isolated Docker container acting as a lightweight virtual machine. This prevents the AI from modifying system files outside your workspace. 
+
+You can also run the entire Aura application within a virtual machine using the provided Docker script:
+```bash
+./docker-run.sh
+```
 
 ### Installation
 
@@ -45,7 +55,7 @@ Or clone/download this repository manually (see Installation below).
    ```bash
    ./install.sh
    ```
-   This creates a virtual environment, installs dependencies, and sets up your `.env` file.
+   This will automatically install Docker (if missing), build the virtual machine container, and set up your `.env` file.
 
 3. **Add your API key(s) to `.env`:**
    ```
