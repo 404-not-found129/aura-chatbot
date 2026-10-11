@@ -45,10 +45,20 @@ You can also run the entire Aura application within a virtual machine using the 
 
 ### Installation
 
+**One command:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/404-not-found129/aura-chatbot/master/install.sh | bash
+```
+
+This downloads Aura into `~/.local/share/aura-chatbot` (set `AURA_DIR` to choose another folder) and runs the installer. Run it again to update. Then add your API key(s) to `.env` in that folder (step 3 below).
+
+**Or install manually:**
+
 1. **Clone or download:**
    ```bash
-   git clone <your-github-repo-url>
-   cd "aura chatbot"
+   git clone https://github.com/404-not-found129/aura-chatbot.git
+   cd aura-chatbot
    ```
 
 2. **Run the install script:**
